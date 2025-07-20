@@ -27,6 +27,13 @@ resource "google_project_service" "sqladmin" {
   disable_on_destroy = false
 }
 
+# NEW: Enable Secret Manager API
+resource "google_project_service" "secretmanager" {
+  service = "secretmanager.googleapis.com"
+  project = var.project
+  disable_on_destroy = false
+}
+
 locals {
   runtime_sa_email = "${data.google_project.this.number}-compute@developer.gserviceaccount.com"
   runtime_sa_id    = "projects/${data.google_project.this.project_id}/serviceAccounts/${local.runtime_sa_email}"
@@ -59,7 +66,18 @@ resource "google_secret_manager_secret" "db_password_secret" {
   labels = {
     "managed-by" = "terraform"
   }
+  # Dependency to ensure Secret Manager API is enabled before creating secret
+  depends_on = [google_project_service.secretmanager]
 }
+
+# NEW: Secret version for the database password
+resource "google_secret_manager_secret_version" "db_password_secret_version" {
+  secret      = google_secret_manager_secret.db_password_secret.id
+  secret_data = var.db_password
+}
+
+# NEW: Random UUID for the internal Kubernetes Secret name (required by Cloud Run annotation)
+resource "random_uuid" "db_password_secret_uuid" {}
 
 # NEW: Secret version for the database password
 resource "google_secret_manager_secret_version" "db_password_secret_version" {
@@ -102,14 +120,20 @@ resource "google_cloud_run_service" "default" {
     google_project_service.run,
     google_project_service.artifact_registry,
     google_project_service.sqladmin, # NEW: Dependency on SQL Admin API
-    google_service_account_iam_member.run_sa_act_as
-    google_project_iam_member.cloud_run_cloudsql_client_role # NEW: Dependency on Cloud SQL Client role
+    google_project_service.secretmanager, # NEW: Dependency on Secret Manager API
+    google_service_account_iam_member.run_sa_act_as,
+    google_project_iam_member.cloud_run_cloudsql_client_role, # NEW: Dependency on Cloud SQL Client role
+    google_secret_manager_secret.db_password_secret, # NEW: Dependency on secret creation
+    google_secret_manager_secret_version.db_password_secret_version # NEW: Dependency on secret version creation
   ]
 
   template {
     metadata {
       annotations = {
         "deploymentTimestamp" = timestamp()
+        # NEW: Annotation to map Secret Manager secret to an internal Kubernetes Secret
+        # The format is "secret-<uuid>:<secret_resource_id>"
+        "run.googleapis.com/secrets" = "secret-${random_uuid.db_password_secret_uuid.result}:${google_secret_manager_secret.db_password_secret.id}"
       }
     }
     spec {
@@ -151,9 +175,11 @@ resource "google_cloud_run_service" "default" {
               secret  = google_secret_manager_secret.db_password_secret.secret_id
               # Pin to a specific version for stability, or use "latest"
               version = google_secret_manager_secret_version.db_password_secret_version.version
+              key     = google_secret_manager_secret_version.db_password_secret_version.version
+              name    = "secret-${random_uuid.db_password_secret_uuid.result}"
+            }
             }
           }
-        }
       }
       # --- Cloud SQL Auth Proxy Sidecar Container ---
       containers {
@@ -169,11 +195,6 @@ resource "google_cloud_run_service" "default" {
 
         ports {
           container_port = 5432 # Expose this port within the Cloud Run instance
-        }
-
-        # Good security practice: prevent privilege escalation
-        security_context {
-          allow_privilege_escalation = false
         }
       }
     }
@@ -194,3 +215,22 @@ resource "google_cloud_run_service_iam_member" "invoker" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -64,7 +64,6 @@ resource "google_cloud_run_service" "default" {
     google_service_account_iam_member.run_sa_act_as
   ]
 
-
   template {
     metadata {
       annotations = {

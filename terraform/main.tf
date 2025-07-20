@@ -79,12 +79,6 @@ resource "google_secret_manager_secret_version" "db_password_secret_version" {
 # NEW: Random UUID for the internal Kubernetes Secret name (required by Cloud Run annotation)
 resource "random_uuid" "db_password_secret_uuid" {}
 
-# NEW: Secret version for the database password
-resource "google_secret_manager_secret_version" "db_password_secret_version" {
-  secret      = google_secret_manager_secret.db_password_secret.id
-  secret_data = var.db_password
-}
-
 # this null_resource will delete any existing service before we try to create a new one
 resource "null_resource" "delete_old_run_service" {
   triggers = {

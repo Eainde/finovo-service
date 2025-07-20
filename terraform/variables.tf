@@ -20,13 +20,7 @@ variable "service_name" {
   default     = "finovo-service"
 }
 
-variable "credentials_json" {
-  description = "Path to the GCP service account key JSON file for Terraform authentication."
-  type        = string
-  sensitive   = true # Mark as sensitive
-  # Consider using GOOGLE_APPLICATION_CREDENTIALS env var instead of hardcoding or file path for CI/CD
-  # default = "/Users/akshaydipta/Downloads/finovo-466315-0e970e92573f.json"
-}
+
 variable "deployer_sa_email" {
   description = "The service account email used by CI to deploy (artifact-pusher@...)."
   type        = string

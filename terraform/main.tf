@@ -1,6 +1,5 @@
 provider "google" {
 #  credentials = file("/Users/akshaydipta/Downloads/finovo-466315-0e970e92573f.json")
-  credentials = var.credentials_json
   project     = var.project
   region      = var.region
 }

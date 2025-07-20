@@ -1,5 +1,36 @@
 data "external" "gcp_authenticated_account" {
-  program = ["bash", "-c", "gcloud auth list --filter=status:ACTIVE --format='json(account)' | jq -r '.[0].account'"]
+  program = ["bash", "-c", <<-EOT
+    # Ensure jq is available
+    if ! command -v jq &> /dev/null; then
+        echo "jq not found, attempting to install..." >&2
+        sudo apt-get update && sudo apt-get install -y jq >&2
+    fi
+
+    # Get active gcloud account. Redirect stderr to /dev/null to avoid non-JSON output.
+    # If no account is active, gcloud auth list will print nothing to stdout.
+    ACCOUNT_INFO=$(gcloud auth list --filter=status:ACTIVE --format='json(account)' 2>/dev/null)
+
+    # Check if ACCOUNT_INFO is empty (no active account)
+    if [ -z "$ACCOUNT_INFO" ]; then
+        # Output a default JSON indicating no active account
+        echo "{\"account\": \"No active gcloud account found.\"}"
+    else
+        # Parse the JSON and extract the account, then format it as a single JSON object.
+        # This handles cases where gcloud might output an array.
+        echo "$ACCOUNT_INFO" | jq -r '.[0].account' | xargs -I {} echo "{\"account\": \"{}\"}"
+    fi
+  EOT
+  ]
+  # Define the expected structure of the output
+  result_as_map = {
+    account = "string"
+  }
+}
+
+# Add an output block to easily see this in the plan/apply output
+output "gcp_authenticated_account_email" {
+  description = "The email of the GCP account authenticated by Terraform."
+  value       = data.external.gcp_authenticated_account.result.account
 }
 
 provider "google" {

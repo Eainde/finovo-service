@@ -166,9 +166,6 @@ resource "google_cloud_run_service" "default" {
           name = "DB_PASSWORD"
           value_from {
             secret_key_ref {
-              secret  = google_secret_manager_secret.db_password_secret.secret_id
-              # Pin to a specific version for stability, or use "latest"
-              version = google_secret_manager_secret_version.db_password_secret_version.version
               key     = google_secret_manager_secret_version.db_password_secret_version.version
               name    = "secret-${random_uuid.db_password_secret_uuid.result}"
             }

@@ -70,6 +70,17 @@ resource "google_secret_manager_secret" "db_password_secret" {
   depends_on = [google_project_service.secretmanager]
 }
 
+resource "google_project_iam_member" "terraform_run_admin" {
+  project = var.project
+  role    = "roles/run.admin"
+  member  = "serviceAccount:${var.deployer_sa_email}"
+
+  # Ensure the Cloud Run API is enabled first:
+  depends_on = [
+    google_project_service.run
+  ]
+}
+
 # NEW: Secret version for the database password
 resource "google_secret_manager_secret_version" "db_password_secret_version" {
   secret      = google_secret_manager_secret.db_password_secret.id

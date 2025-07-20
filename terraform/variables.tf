@@ -20,7 +20,10 @@ variable "service_name" {
   default     = "finovo-service"
 }
 
-
+variable "credentials_json" {
+  description = "Path to the GCP service account key JSON file for Terraform authentication."
+  type        = string
+}
 variable "deployer_sa_email" {
   description = "The service account email used by CI to deploy (artifact-pusher@...)."
   type        = string

@@ -1,3 +1,7 @@
+data "external" "gcp_authenticated_account" {
+  program = ["bash", "-c", "gcloud auth list --filter=status:ACTIVE --format='json(account)' | jq -r '.[0].account'"]
+}
+
 provider "google" {
 #  credentials = file("/Users/akshaydipta/Downloads/finovo-466315-0e970e92573f.json")
   credentials = var.credentials_json
@@ -217,6 +221,9 @@ resource "google_cloud_run_service_iam_member" "invoker" {
   role     = "roles/run.invoker"
   member   = "allUsers"
 }
+
+
+
 
 
 

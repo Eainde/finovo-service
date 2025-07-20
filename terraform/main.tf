@@ -7,7 +7,6 @@ data "external" "gcp_authenticated_account" {
     fi
 
     # Get active gcloud account. Redirect stderr to /dev/null to avoid non-JSON output.
-    # If no account is active, gcloud auth list will print nothing to stdout.
     ACCOUNT_INFO=$(gcloud auth list --filter=status:ACTIVE --format='json(account)' 2>/dev/null)
 
     # Check if ACCOUNT_INFO is empty (no active account)
@@ -21,17 +20,16 @@ data "external" "gcp_authenticated_account" {
     fi
   EOT
   ]
-  # Define the expected structure of the output
-  result_as_map = {
-    account = "string"
-  }
+  # Removed: result_as_map = { account = "string" }
 }
 
 # Add an output block to easily see this in the plan/apply output
 output "gcp_authenticated_account_email" {
   description = "The email of the GCP account authenticated by Terraform."
+  # Access the result via .result.<key_name>
   value       = data.external.gcp_authenticated_account.result.account
 }
+
 
 provider "google" {
 #  credentials = file("/Users/akshaydipta/Downloads/finovo-466315-0e970e92573f.json")

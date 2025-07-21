@@ -52,6 +52,41 @@ resource "null_resource" "delete_old_run_service" {
   }
 }
 
+# 1. Enable the Serverless VPC Access API
+# This API must be enabled in your GCP project for the connector to function.
+resource "google_project_service" "vpcaccess_api" {
+  service            = "vpcaccess.googleapis.com"
+  project            = var.project
+  disable_on_destroy = false # Set to true if you want to disable the API when Terraform destroys the resource
+}
+
+# 2. Define your VPC network
+#    If you already have a VPC network defined in Terraform, use that resource.
+#    If you have an existing VPC network not managed by Terraform, use a data source:
+#    data "google_compute_network" "existing_vpc" { name = "your-existing-vpc-name" }
+resource "google_compute_network" "my_vpc_network" {
+  name                    = "my-app-vpc-network" # Name for your VPC network
+  auto_create_subnetworks = false                # Set to false for custom subnets
+  project                 = var.project
+}
+
+# 3. Create the Serverless VPC Access Connector
+#    The name is set to "finovo-connector" as requested.
+resource "google_vpc_access_connector" "finovo_connector" {
+  name          = "finovo-connector" # Your specified connector name
+  region        = var.region
+  network       = google_compute_network.my_vpc_network.name # References the VPC network defined above
+  ip_cidr_range = "10.8.0.0/28"        # An unused /28 IP range in your VPC. Adjust if needed.
+  min_instances = 2                    # Minimum instances for scaling
+  max_instances = 3                    # Maximum instances for scaling (adjust based on throughput needs)
+  machine_type  = "e2-micro"           # Machine type for connector instances
+
+  # Ensure the VPC Access API is enabled before creating the connector
+  depends_on = [google_project_service.vpcaccess_api]
+
+  project = var.project
+}
+
 resource "google_cloud_run_service" "default" {
   name     = var.service_name
   location = var.region
@@ -68,10 +103,13 @@ resource "google_cloud_run_service" "default" {
     metadata {
       annotations = {
         "deploymentTimestamp" = timestamp()
-        "run.googleapis.com/vpc-access-connector" = "projects/${var.project}/locations/${var.region}/connectors/${google_vpc_access_connector.finovo-connector}"
-        "run.googleapis.com/vpc-access-egress" = "all-traffic" # or "private-ranges-only"
-
       }
+    }
+    vpc_access {
+      # Reference the ID of the finovo_connector resource
+      connector = google_vpc_access_connector.finovo_connector.id
+      egress    = "ALL_TRAFFIC" # Route all outbound traffic through the connector
+      # Use "PRIVATE_RANGES_ONLY" if you only need to reach private IPs
     }
     spec {
       service_account_name = local.runtime_sa_email

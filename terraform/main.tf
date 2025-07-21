@@ -103,6 +103,14 @@ resource "google_cloud_run_service" "default" {
         ports {
           container_port = 8443
         }
+        env {
+          name  = "DB_HOST"
+          value = "10.36.176.3" # <--- Updated with the actual Private IP
+        }
+        env {
+          name  = "DB_PORT"
+          value = "5432"
+        }
       }
     }
   }

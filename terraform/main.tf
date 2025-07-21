@@ -87,7 +87,7 @@ resource "google_cloud_run_service" "default" {
         }
         env {
           name  = "DB_HOST"
-          value = "/cloudsql/finovo-466315:europe-west2:finovo" # <--- Updated with the actual Private IP
+          value = "/cloudsql/finovo-466315:europe-west2:finovo"
         }
         env {
           name  = "DB_PORT"
@@ -95,15 +95,15 @@ resource "google_cloud_run_service" "default" {
         }
         env {
           name  = "DB_USER"
-          value = "finovo" # <--- REPLACE WITH YOUR ACTUAL DATABASE USERNAME
+          value = "finovo"
         }
         env {
           name  = "DB_PASSWORD"
-          value = "finovo" # <--- REPLACE WITH YOUR ACTUAL DATABASE PASSWORD
+          value = "finovo"
         }
         env {
           name  = "DB_NAME"
-          value = "finovo" # <--- REPLACE WITH YOUR ACTUAL DATABASE NAME
+          value = "finovo"
         }
       }
     }

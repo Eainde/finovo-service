@@ -70,22 +70,7 @@ resource "google_compute_network" "my_vpc_network" {
   project                 = var.project
 }
 
-# 3. Create the Serverless VPC Access Connector
-#    The name is set to "finovo-connector" as requested.
-resource "google_vpc_access_connector" "finovo_connector" {
-  name          = "finovo-connector" # Your specified connector name
-  region        = var.region
-  network       = google_compute_network.my_vpc_network.name # References the VPC network defined above
-  ip_cidr_range = "10.8.0.0/28"        # An unused /28 IP range in your VPC. Adjust if needed.
-  min_instances = 2                    # Minimum instances for scaling
-  max_instances = 3                    # Maximum instances for scaling (adjust based on throughput needs)
-  machine_type  = "e2-micro"           # Machine type for connector instances
 
-  # Ensure the VPC Access API is enabled before creating the connector
-  depends_on = [google_project_service.vpcaccess_api]
-
-  project = var.project
-}
 
 resource "google_cloud_run_service" "default" {
   name     = var.service_name

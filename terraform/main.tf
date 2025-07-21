@@ -103,14 +103,11 @@ resource "google_cloud_run_service" "default" {
     metadata {
       annotations = {
         "deploymentTimestamp" = timestamp()
+        "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.finovo_connector.id
+        "run.googleapis.com/vpc-access-egress"    = "all-traffic"
       }
     }
-    vpc_access {
-      # Reference the ID of the finovo_connector resource
-      connector = google_vpc_access_connector.finovo_connector.id
-      egress    = "ALL_TRAFFIC" # Route all outbound traffic through the connector
-      # Use "PRIVATE_RANGES_ONLY" if you only need to reach private IPs
-    }
+
     spec {
       service_account_name = local.runtime_sa_email
       timeout_seconds = 300

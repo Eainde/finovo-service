@@ -52,21 +52,6 @@ resource "null_resource" "delete_old_run_service" {
   }
 }
 
-# 1. Enable the Serverless VPC Access API
-# This API must be enabled in your GCP project for the connector to function.
-resource "google_project_service" "vpcaccess_api" {
-  service            = "vpcaccess.googleapis.com"
-  project            = var.project
-  disable_on_destroy = false # Set to true if you want to disable the API when Terraform destroys the resource
-}
-
-
-data "google_vpc_access_connector" "finovo_connector" {
-  name    = "finovo-connector" # The exact name of your existing connector
-  region  = var.region         # Must match the connector's region
-  project = var.project
-}
-
 resource "google_cloud_run_service" "default" {
   name     = var.service_name
   location = var.region
@@ -83,11 +68,8 @@ resource "google_cloud_run_service" "default" {
     metadata {
       annotations = {
         "deploymentTimestamp" = timestamp()
-        "run.googleapis.com/vpc-access-connector" = data.google_vpc_access_connector.finovo_connector.id
-        "run.googleapis.com/vpc-access-egress"    = "all-traffic"
       }
     }
-
     spec {
       service_account_name = local.runtime_sa_email
       timeout_seconds = 300
@@ -105,7 +87,7 @@ resource "google_cloud_run_service" "default" {
         }
         env {
           name  = "DB_HOST"
-          value = "10.36.176.3" # <--- Updated with the actual Private IP
+          value = "/cloudsql/finovo-466315:europe-west2:finovo" # <--- Updated with the actual Private IP
         }
         env {
           name  = "DB_PORT"
@@ -124,8 +106,6 @@ resource "google_cloud_run_service" "default" {
           value = "finovo" # <--- REPLACE WITH YOUR ACTUAL DATABASE NAME
         }
       }
-
-
     }
   }
 

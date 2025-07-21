@@ -68,6 +68,9 @@ resource "google_cloud_run_service" "default" {
     metadata {
       annotations = {
         "deploymentTimestamp" = timestamp()
+        "run.googleapis.com/vpc-access-connector" = "projects/${var.project}/locations/${var.region}/connectors/${google_vpc_access_connector.finovo-connector}"
+        "run.googleapis.com/vpc-access-egress" = "all-traffic" # or "private-ranges-only"
+
       }
     }
     spec {

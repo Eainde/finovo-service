@@ -70,7 +70,11 @@ resource "google_compute_network" "my_vpc_network" {
   project                 = var.project
 }
 
-
+data "google_vpc_access_connector" "finovo_connector" {
+  name    = "finovo-connector" # The exact name of your existing connector
+  region  = var.region         # Must match the connector's region
+  project = var.project
+}
 
 resource "google_cloud_run_service" "default" {
   name     = var.service_name
@@ -88,7 +92,7 @@ resource "google_cloud_run_service" "default" {
     metadata {
       annotations = {
         "deploymentTimestamp" = timestamp()
-        "run.googleapis.com/vpc-access-connector" = google_vpc_access_connector.finovo_connector.id
+        "run.googleapis.com/vpc-access-connector" = data.google_vpc_access_connector.finovo_connector.id
         "run.googleapis.com/vpc-access-egress"    = "all-traffic"
       }
     }

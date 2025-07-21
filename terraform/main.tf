@@ -60,15 +60,6 @@ resource "google_project_service" "vpcaccess_api" {
   disable_on_destroy = false # Set to true if you want to disable the API when Terraform destroys the resource
 }
 
-# 2. Define your VPC network
-#    If you already have a VPC network defined in Terraform, use that resource.
-#    If you have an existing VPC network not managed by Terraform, use a data source:
-#    data "google_compute_network" "existing_vpc" { name = "your-existing-vpc-name" }
-resource "google_compute_network" "my_vpc_network" {
-  name                    = "my-app-vpc-network" # Name for your VPC network
-  auto_create_subnetworks = false                # Set to false for custom subnets
-  project                 = var.project
-}
 
 data "google_vpc_access_connector" "finovo_connector" {
   name    = "finovo-connector" # The exact name of your existing connector

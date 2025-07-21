@@ -111,7 +111,21 @@ resource "google_cloud_run_service" "default" {
           name  = "DB_PORT"
           value = "5432"
         }
+        env {
+          name  = "DB_USER"
+          value = "finovo" # <--- REPLACE WITH YOUR ACTUAL DATABASE USERNAME
+        }
+        env {
+          name  = "DB_PASSWORD"
+          value = "finovo" # <--- REPLACE WITH YOUR ACTUAL DATABASE PASSWORD
+        }
+        env {
+          name  = "DB_NAME"
+          value = "finovo" # <--- REPLACE WITH YOUR ACTUAL DATABASE NAME
+        }
       }
+
+
     }
   }
 

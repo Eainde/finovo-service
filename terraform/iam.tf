@@ -18,5 +18,5 @@ resource "google_secret_manager_secret_iam_member" "secret_accessor" {
   secret_id = google_secret_manager_secret.db_password.secret_id
   role      = "roles/secretmanager.secretAccessor"
   # The service account is implicitly created for the Cloud Run service.
-  member    = "serviceAccount:${google_cloud_run_v2_service.main.template.service_account}"
+  member    = "serviceAccount:${google_cloud_run_v2_service.main.template[0].service_account}"
 }

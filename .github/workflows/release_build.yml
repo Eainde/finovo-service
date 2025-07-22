@@ -83,17 +83,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Activate gcloud for local‑exec
-        run: |
-          cat <<EOF > "${HOME}/sa-key.json"
-          ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          EOF
-          gcloud auth activate-service-account \
-          --key-file="${HOME}/sa-key.json"
-          gcloud config set project "${{ env.PROJECT_ID }}"
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: projects/${{ secrets.GCP_PROJECT_ID }}/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: "1.5.0"
 
@@ -107,8 +105,8 @@ jobs:
           HOST="${{ env.REGION }}-docker.pkg.dev"
           terraform plan \
             -input=false \
-            -var="project=${{ env.PROJECT_ID }}" \
-            -var="region=${{ env.REGION }}" \
+            -var="gcp_project_id=${{ env.PROJECT_ID }}" \
+            -var="gcp_region=${{ env.REGION }}" \
             -var="image_url=$HOST/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:${{ needs.artifactory-build.outputs.image_url }}" \
             -var="credentials_json=$GOOGLE_CREDENTIALS" \
             -var="deployer_sa_email=$DEPLOY_SA_EMAIL" \
@@ -121,4 +119,5 @@ jobs:
           terraform apply \
             -input=false \
             -auto-approve \
+            -var="gcp_project_id=${{ env.PROJECT_ID }}" \
             tfplan

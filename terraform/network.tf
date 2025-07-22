@@ -17,6 +17,7 @@ resource "google_vpc_access_connector" "main" {
   network       = data.google_compute_network.main.name
   region        = var.gcp_region
   project       = var.gcp_project_id
-  max_instances = 2
+  min_instances = 2
+  max_instances = 3
   depends_on    = [google_project_service.apis]
 }

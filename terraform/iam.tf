@@ -14,8 +14,8 @@ resource "google_cloud_run_v2_service_iam_binding" "allow_public" {
 
 # Grant the Cloud Run service's service account permission to access the database password secret.
 resource "google_secret_manager_secret_iam_member" "secret_accessor" {
-  project   = google_secret_manager_secret.db_password.project
-  secret_id = google_secret_manager_secret.db_password.secret_id
+  project   = data.google_secret_manager_secret.db_password.project
+  secret_id = data.google_secret_manager_secret.db_password.secret_id
   role      = "roles/secretmanager.secretAccessor"
   # The service account is implicitly created for the Cloud Run service.
   member    = "serviceAccount:${google_cloud_run_v2_service.main.template[0].service_account}"

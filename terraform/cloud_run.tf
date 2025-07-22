@@ -36,7 +36,7 @@ resource "google_cloud_run_v2_service" "main" {
         name = "DB_PASS"
         value_source {
           secret_key_ref {
-            secret  = google_secret_manager_secret.db_password.secret_id
+            secret  = data.google_secret_manager_secret.db_password.secret_id
             version = "1"
           }
         }
@@ -58,6 +58,5 @@ resource "google_cloud_run_v2_service" "main" {
 
   depends_on = [
     google_project_service.apis,
-    google_secret_manager_secret_version.db_password_version
   ]
 }

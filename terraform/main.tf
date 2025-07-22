@@ -17,5 +17,5 @@ resource "google_project_service" "apis" {
   ])
   project                    = var.gcp_project_id
   service                    = each.key
-  #disable_dependency_violation = true # Prevents errors if APIs are already enabled.
+  disable_on_destroy = false
 }

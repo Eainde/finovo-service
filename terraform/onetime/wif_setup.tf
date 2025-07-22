@@ -40,6 +40,12 @@ variable "provider_id" {
   default     = "github-provider-finovo-1"
 }
 
+variable "location" {
+  description = "The location for the GCS bucket."
+  type        = string
+  default     = "EU" # You can change this to your preferred location, e.g., "EU"
+}
+
 # 1. Look up your existing Service Account.
 data "google_service_account" "existing_sa" {
   account_id = split("@", var.existing_sa_email)[0]
@@ -96,6 +102,19 @@ resource "google_project_iam_member" "sa_roles" {
   project = var.gcp_project_id
   role    = each.key
   member  = "serviceAccount:${var.existing_sa_email}"
+}
+
+# The bucket name must be globally unique. We use the project ID to help ensure this.
+resource "google_storage_bucket" "tfstate" {
+  name          = "${var.gcp_project_id}-tfstate"
+  project       = var.gcp_project_id
+  location      = var.location
+  force_destroy = false # Set to true to allow deletion of a non-empty bucket
+
+  # Enable versioning to keep a history of your state files, which is crucial for recovery.
+  versioning {
+    enabled = true
+  }
 }
 
 output "workload_identity_provider_name" {

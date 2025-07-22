@@ -108,8 +108,6 @@ jobs:
             -var="gcp_project_id=${{ env.PROJECT_ID }}" \
             -var="gcp_region=${{ env.REGION }}" \
             -var="image_url=$HOST/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:${{ needs.artifactory-build.outputs.image_url }}" \
-            -var="credentials_json=$GOOGLE_CREDENTIALS" \
-            -var="deployer_sa_email=$DEPLOY_SA_EMAIL" \
             -out=tfplan
 
       - name: Terraform Apply

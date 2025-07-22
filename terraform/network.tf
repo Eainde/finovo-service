@@ -10,7 +10,7 @@ data "google_compute_network" "main" {
 # Create a Serverless VPC Access connector to allow Cloud Run to communicate
 # with resources in the VPC network.
 resource "google_vpc_access_connector" "main" {
-  name          = "app-connector"
+  name          = "finovo-db-connector"
   # This CIDR range must be a /28 and must not overlap with any existing
   # subnets in your VPC.
   ip_cidr_range = "10.8.0.0/28"

@@ -31,13 +31,13 @@ variable "existing_sa_email" {
 variable "pool_id" {
   description = "A unique ID for the Workload Identity Pool."
   type        = string
-  default     = "github-actions-pool-finovo" # Using a new, unique name to avoid conflicts.
+  default     = "github-actions-pool-finovo-1" # Using a new, unique name to avoid conflicts.
 }
 
 variable "provider_id" {
   description = "A unique ID for the Workload Identity Pool Provider."
   type        = string
-  default     = "github-provider-finovo"
+  default     = "github-provider-finovo-1"
 }
 
 # 1. Look up your existing Service Account.

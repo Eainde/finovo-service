@@ -5,6 +5,7 @@ resource "google_cloud_run_v2_service" "main" {
   name     = "finovo-service"
   location = var.gcp_region
   project  = var.gcp_project_id
+  deletion_protection = false
 
   # The template defines the configuration for new revisions of the service.
   template {

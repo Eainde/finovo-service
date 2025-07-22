@@ -74,4 +74,7 @@ terraform.rc
 .env
 *.swp
 */.terraform*
+terraform/onetime/.terraform
+terraform/onetime/terraform.tfstate
+terraform/onetime/terraform.tfstate.backup
 

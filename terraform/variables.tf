@@ -1,7 +1,7 @@
 variable "gcp_project_id" {
   description = "The GCP project ID where resources will be deployed."
   type        = string
-  default = "inovo-466315"
+  default = "finovo-466315"
 }
 
 variable "gcp_region" {

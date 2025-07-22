@@ -36,7 +36,7 @@ resource "google_cloud_run_v2_service" "main" {
         name = "DB_PASS"
         value_source {
           secret_key_ref {
-            secret  = data.google_secret_manager_secret.db_password.secret_id
+            secret  = google_secret_manager_secret.db_password.secret_id
             version = "1"
           }
         }

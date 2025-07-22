@@ -51,14 +51,4 @@ variable "image_url" {
   type        = string
 }
 
-variable "github_repository" {
-  description = "Your GitHub repository in 'owner/repo' format (e.g., 'my-org/my-cool-app')."
-  type        = string
-  default     = "Eainde/finovo-service"
-}
 
-variable "existing_sa_email" {
-  description = "The email address of your existing Google Cloud Service Account."
-  type        = string
-  default     = "artifact-pusher@finovo-466315.iam.gserviceaccount.com"
-}

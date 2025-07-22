@@ -4,6 +4,8 @@
 resource "google_secret_manager_secret" "db_password" {
   secret_id = var.db_user # Naming the secret after the user for clarity.
   project   = var.gcp_project_id
+  replication {
+  }
 }
 
 # Create a version for the secret with the actual password value.

@@ -117,5 +117,4 @@ jobs:
           terraform apply \
             -input=false \
             -auto-approve \
-            -var="gcp_project_id=${{ env.PROJECT_ID }}" \
             tfplan

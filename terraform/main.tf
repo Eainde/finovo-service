@@ -1,4 +1,13 @@
 # This file contains the main provider configuration and enables the necessary GCP APIs.
+terraform {
+  # This tells Terraform to store its state file in a GCS bucket, allowing
+  # state to be shared between GitHub Actions runs.
+  backend "gcs" {
+    bucket = "finovo-466315-tfstate" # This is the bucket created by the backend_setup.tf script.
+    prefix = "finovo-service/state"
+  }
+}
+
 provider "google" {
   project = var.gcp_project_id
   region  = var.gcp_region

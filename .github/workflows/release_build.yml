@@ -38,7 +38,7 @@ jobs:
         uses: 'google-github-actions/auth@v2'
         with:
           workload_identity_provider: projects/817923714803/locations/global/workloadIdentityPools/github-actions-pool-finovo-1/providers/github-provider-finovo-1
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+          service_account: artifact-pusher@finovo-466315.iam.gserviceaccount.com
 
 
       - name: Setup gcloud SDK

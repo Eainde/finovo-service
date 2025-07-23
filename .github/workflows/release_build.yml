@@ -33,19 +33,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: projects/817923714803/locations/global/workloadIdentityPools/github-actions-pool-finovo-1/providers/github-provider-finovo-1
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+
       - name: Setup gcloud SDK
         uses: google-github-actions/setup-gcloud@v2
-        with:
-          project_id: ${{ env.PROJECT_ID }}
-          export_default_credentials: false
-
-      - name: Activate Service Account
-        run: |
-          cat <<EOF > "$HOME/sa-key.json"
-          ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
-          EOF
-          gcloud auth activate-service-account --key-file="$HOME/sa-key.json"
-          gcloud config set project "${{ env.PROJECT_ID }}"
 
       - name: Enable IAM Credentials API
         run: |

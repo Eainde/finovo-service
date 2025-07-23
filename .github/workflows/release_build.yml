@@ -44,10 +44,6 @@ jobs:
       - name: Setup gcloud SDK
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Enable IAM Credentials API
-        run: |
-          gcloud services enable iamcredentials.googleapis.com --quiet
-
       - name: Configure Docker Auth
         run: |
           HOST="${{ env.REGION }}-docker.pkg.dev"

@@ -2,6 +2,7 @@ package com.finovo.service;
 
 import com.finovo.entity.UserEntity;
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import com.finovo.repository.UserRepository;

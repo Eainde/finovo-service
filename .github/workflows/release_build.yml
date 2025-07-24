@@ -1,0 +1,113 @@
+name: Release Build & Push to GCP
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+  workflow_call:
+    outputs:
+      image_url:
+        description: "The URI of the built Docker image"
+        value: ${{ jobs.artifactory-build.outputs.image_url }}
+
+permissions:
+  contents: read
+  issues: write
+  id-token: write
+  pull-requests: read
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  REGION:     ${{ secrets.GCP_REGION }}
+  REPO:       ${{ secrets.GCP_ARTIFACT_REPOSITORY }}
+  IMAGE:      finovo-service
+
+jobs:
+  artifactory-build:
+    runs-on: ubuntu-latest
+    outputs:
+      image_url: ${{ steps.docker.outputs.image_url }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: projects/817923714803/locations/global/workloadIdentityPools/github-actions-pool-finovo-1/providers/github-provider-finovo-1
+          service_account: artifact-pusher@finovo-466315.iam.gserviceaccount.com
+
+
+      - name: Setup gcloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker Auth
+        run: |
+          HOST="${{ env.REGION }}-docker.pkg.dev"
+          gcloud auth configure-docker "$HOST" --quiet
+
+      - name: Build & Push Docker Image
+        id: docker
+        run: |
+          HOST="${{ env.REGION }}-docker.pkg.dev"
+          IMAGE_URL="$HOST/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:${GITHUB_SHA}"
+          LATEST_TAG="$HOST/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:latest"
+
+          echo "Building $IMAGE_URL"
+          docker build -t "$IMAGE_URL" .
+          echo "Pushing $IMAGE_URL"
+          docker push "$IMAGE_URL"
+          echo "Tagging and pushing $LATEST_TAG"
+          docker tag "$IMAGE_URL" "$LATEST_TAG"
+          docker push "$LATEST_TAG"
+          echo "image_url=$GITHUB_SHA" >> "$GITHUB_OUTPUT"
+
+  cloud-run-deploy:
+    needs: artifactory-build
+    runs-on: ubuntu-latest
+    env:
+      GOOGLE_CREDENTIALS: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+      DEPLOY_SA_EMAIL:   ${{ fromJson(secrets.GCP_SERVICE_ACCOUNT_KEY).client_email }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: projects/817923714803/locations/global/workloadIdentityPools/github-actions-pool-finovo-1/providers/github-provider-finovo-1
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_KEY }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.5.0"
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform Plan
+        working-directory: terraform
+        run: |
+          HOST="${{ env.REGION }}-docker.pkg.dev"
+          terraform plan \
+            -input=false \
+            -var="gcp_project_id=${{ env.PROJECT_ID }}" \
+            -var="gcp_region=${{ env.REGION }}" \
+            -var="image_url=$HOST/${{ env.PROJECT_ID }}/${{ env.REPO }}/${{ env.IMAGE }}:${{ needs.artifactory-build.outputs.image_url }}" \
+            -out=tfplan
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main'
+        working-directory: terraform
+        run: |
+          terraform apply \
+            -input=false \
+            -auto-approve \
+            tfplan

@@ -1,7 +1,7 @@
 variable "gcp_project_id" {
   description = "The GCP project ID where resources will be deployed."
   type        = string
-  default = "finovo-466315"
+  default     = "hack-team-hacksmiths"
 }
 
 variable "gcp_region" {
@@ -44,7 +44,7 @@ variable "db_pass" {
 variable "existing_repo_name" {
   description = "The name of the existing Artifact Registry repository."
   type        = string
-  default     = "docker-repo" # Change this to the name of your repository
+  default     = "finovo-docker-repo"
 }
 
 variable "image_url" {

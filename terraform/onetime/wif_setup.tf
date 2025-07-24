@@ -13,19 +13,19 @@ provider "google" {
 variable "gcp_project_id" {
   description = "The GCP project ID where you want to create the identity pool."
   type        = string
-  default     = "finovo-466315"
+  default     = "hack-team-hacksmiths"
 }
 
 variable "github_repository" {
   description = "Your GitHub repository in 'owner/repo' format (e.g., 'my-org/my-cool-app')."
   type        = string
-  default     = "Eainde/finovo-service"
+  default     = "db-hackathon/hacksmiths"
 }
 
 variable "existing_sa_email" {
   description = "The email address of your existing Google Cloud Service Account."
   type        = string
-  default     = "artifact-pusher@finovo-466315.iam.gserviceaccount.com"
+  default     = "infrastructure@hack-team-hacksmiths.iam.gserviceaccount.com"
 }
 
 variable "pool_id" {
